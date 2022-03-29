@@ -1,0 +1,20 @@
+tree("Root")
+	fallback
+		sequence
+			fallback
+				CanSeePlayer
+				AwareOfPlayer
+			tree "Chase"
+		tree "Sentry"
+			
+tree("Chase")
+	sequence
+		ChasePlayer
+		fallback
+			CanSeePlayer
+			sequence
+				tree "Sentry"
+
+tree("Sentry")
+	sequence
+		ComeBack

@@ -1,0 +1,21 @@
+tree("Root")
+	fallback
+		sequence
+			fallback
+				CanSeePlayer
+				AwareOfPlayer
+			tree "Chase"
+		tree "Patrol"
+
+tree("Patrol")
+	sequence
+		SetDestination_Random
+
+tree("Chase")
+	sequence
+		ChasePlayer
+		fallback
+			CanSeePlayer
+			sequence
+				tree "Patrol"
+			
