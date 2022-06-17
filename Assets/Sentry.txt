@@ -9,11 +9,13 @@ tree("Root")
 			
 tree("Chase")
 	sequence
+		CloseDoors
 		ChasePlayer
 		fallback
 			CanSeePlayer
-			sequence
-				tree "Sentry"
+			while 
+				Contador
+				GoLastSeenPosition
 
 tree("Sentry")
 	sequence

@@ -8,14 +8,20 @@ using Panda;
 public class Patrol : MonoBehaviour
 {
     NavMeshAgent agent;
-
-   // float random_destination_radius = 10.0f;
     
     Vector3 InitialPosition;
 
     public Transform[] waypoints;
     private int currentWaypointIndex = 0;
-    //private float speed = 4f;
+
+    public int vida = 3;
+
+    public GameObject BalaInicio;
+    public GameObject BalaPrefab;
+    public float BalaVelocidad;
+
+    public float lastShoot = 0f;
+    public float ritmoDisparo = 2f;
     
 
     void Start()
@@ -46,27 +52,12 @@ public class Patrol : MonoBehaviour
     }
 
     
-/*
-    [Task]
-    void MoveToWaypoints()
-    {
-        Transform wp = waypoints[currentWaypointIndex];
-        
-        transform.position = Vector3.MoveTowards(transform.position, wp.position, speed * Time.deltaTime);
-        agent.SetDestination(transform.position);
-    }
-*/
-    
-    float tiempo = 5.0f;
+    float tiempo = 15.0f;
     
     [Task]
     bool Contador()
     {
-        /*var distancia = this.transform.position + (Random.insideUnitSphere * random_destination_radius);
-        agent.SetDestination(distancia);
-        return true;*/
-        
-        
+ 
         tiempo -= Time.deltaTime;
         if (tiempo <= 0){
             return false;
@@ -83,10 +74,7 @@ public class Patrol : MonoBehaviour
     [Task]
     void GoLastSeenPosition()
     {
-        /*var player = GameObject.FindGameObjectWithTag("Player").GetComponent<Transform>();
-        enemyLastSeenPosition = player.transform.position;
-        agent.SetDestination(enemyLastSeenPosition);
-*/
+  
         var player = GameObject.FindGameObjectWithTag("Player").GetComponent<Transform>();
         
         RaycastHit hit;
@@ -101,16 +89,7 @@ public class Patrol : MonoBehaviour
                 awareOfPlayer = true;
                 Task.current.Fail();
             }
-            
         }
-        
-        
- /*       if (Vector3.Distance(agent.transform.position, enemyLastSeenPosition) < 2f)
-        {
-        
-        }
-        */
-        
     }   
 
     [Task]
@@ -129,7 +108,14 @@ public class Patrol : MonoBehaviour
             {
                 enemyLastSeenPosition = player.transform.position;
                 awareOfPlayer = true;
-                tiempo = 5.0f;
+                tiempo = 15.0f;
+                RotarPlayer();
+
+                if (Time.time - lastShoot >= ritmoDisparo)
+                {
+                    Disparar();
+
+                }
                 return true;
             }
             agent.SetDestination(hit.point);
@@ -139,11 +125,49 @@ public class Patrol : MonoBehaviour
         
     }
 
+    void RotarPlayer()
+    {
+        Vector3 positionOnScreen = Camera.main.WorldToViewportPoint(transform.position);
+        Vector3 mouseOnScreen = (Vector2)Camera.main.WorldToViewportPoint(enemyLastSeenPosition);
+        mouseOnScreen.z = 0;
+
+        Vector3 direction = mouseOnScreen - positionOnScreen;
+
+        float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg -90f;
+        transform.rotation = Quaternion.Euler(new Vector3(0, -angle, 0));
+    }
+
+    void Disparar()
+    {
+        GameObject BalaTemporal = Instantiate(BalaPrefab, BalaInicio.transform.position, BalaInicio.transform.rotation) as GameObject;
+ 
+        Rigidbody rb = BalaTemporal.GetComponent<Rigidbody>();
+       
+        rb.AddForce(transform.forward * BalaVelocidad);
+ 
+        Destroy(BalaTemporal, 4.0f);
+
+        lastShoot = Time.time;
+        
+    }
+
     [Task]
     void ChasePlayer()
     {
+        float rangoMax = 4f;
+        float distancia = Vector3.Distance(agent.transform.position, enemyLastSeenPosition);
+        var patrol = GameObject.FindGameObjectWithTag("Patrol").GetComponent<Transform>();
+        var ActualPosition = patrol.transform.position;
 
-        agent.SetDestination(enemyLastSeenPosition);
+        if (distancia >= rangoMax)
+        {
+            agent.SetDestination(enemyLastSeenPosition);
+        }
+        else
+        {
+            agent.SetDestination(ActualPosition);
+        }
+        
         Task.current.Succeed();
 
     }

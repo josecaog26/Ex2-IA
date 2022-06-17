@@ -11,18 +11,15 @@ tree("Patrol")
 	sequence
 		MoveToWaypoints
 
-tree("Teveo")
-	while 
-		Contador
-		GoLastSeenPosition
-
 tree("Chase")
 	sequence
 		ChasePlayer
 		fallback
 			CanSeePlayer
-			tree "Teveo"
-			
+			while 
+				Contador
+				GoLastSeenPosition
+
 					
 			
 				
